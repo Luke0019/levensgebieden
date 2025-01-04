@@ -9,9 +9,16 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "next": "15.1.2"
+    "chart.js": "^4.4.7",
+    "firebase": "^11.1.0",
+    "html2pdf.js": "^0.10.2",
+    "next": "15.1.2",
+    "postmark": "^4.0.5",
+    "puppeteer": "^23.11.1",
+    "react": "^18.2.0",
+    "react-chartjs-2": "^5.2.0",
+    "react-dom": "^18.2.0",
+    "react-hot-toast": "^2.4.1"
   },
   "devDependencies": {
     "postcss": "^8",
