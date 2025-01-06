@@ -342,7 +342,7 @@ export default function Home() {
         throw pdfError;
       }
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error while submitting data to Firestore:', error);
       toast.error('Er is iets misgegaan bij het verzenden.', {
         id: loadingToast,
       });

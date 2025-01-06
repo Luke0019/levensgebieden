@@ -18,13 +18,14 @@ let analytics;
 let db;
 
 if (typeof window !== 'undefined') {
-  app = initializeApp(firebaseConfig);
-  db = getFirestore(app);
-  // Only initialize analytics in the browser
   try {
+    app = initializeApp(firebaseConfig);
+    db = getFirestore(app);
+    console.log('Firebase initialized successfully'); // Debug log
+    // Only initialize analytics in the browser
     analytics = getAnalytics(app);
   } catch (error) {
-    console.warn('Analytics failed to initialize:', error);
+    console.error('Firebase initialization error:', error); // Log initialization errors
   }
 }
 
