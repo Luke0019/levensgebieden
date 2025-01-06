@@ -1,10 +1,10 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ReactDOMServer from 'react-dom/server';
 import PdfTemplate from './components/PdfTemplate';
 import toast, { Toaster } from 'react-hot-toast';
-import { db } from '../lib/firebase';
 import { collection, addDoc } from 'firebase/firestore';
+import { useRouter } from 'next/navigation';
 
 // Move html2pdf import to a dynamic import
 let html2pdf;
@@ -228,7 +228,7 @@ const questions = {
 };
 
 export default function Home() {
-  const [currentSection, setCurrentSection] = useState(0);
+  const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState({});
   const [email, setEmail] = useState('');
   const [questionIndex, setQuestionIndex] = useState(0);
@@ -236,14 +236,45 @@ export default function Home() {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [city, setCity] = useState('');
   const [age, setAge] = useState('');
+  const router = useRouter();
 
   const sections = Object.keys(questions);
-  const currentArea = sections[currentSection];
+  const currentArea = sections[currentStep];
   const currentAreaQuestions = questions[currentArea]?.questions || [];
+
+  // Load saved state when component mounts
+  useEffect(() => {
+    const savedState = localStorage.getItem('formState');
+    if (savedState) {
+      const { answers: savedAnswers, step: savedStep, timestamp } = JSON.parse(savedState);
+      
+      // Check if saved state is less than 30 minutes old
+      const thirtyMinutesInMs = 30 * 60 * 1000;
+      if (Date.now() - timestamp < thirtyMinutesInMs) {
+        setAnswers(savedAnswers);
+        setCurrentStep(savedStep);
+      } else {
+        // Clear expired state
+        localStorage.removeItem('formState');
+      }
+    }
+  }, []);
+
+  // Save state whenever answers or currentStep changes
+  useEffect(() => {
+    if (Object.keys(answers).length > 0) {
+      const stateToSave = {
+        answers,
+        step: currentStep,
+        timestamp: Date.now()
+      };
+      localStorage.setItem('formState', JSON.stringify(stateToSave));
+    }
+  }, [answers, currentStep]);
 
   const handleAnswerSelect = (questionIndex, value) => {
     // Use the current section and local question index directly
-    const area = sections[currentSection];
+    const area = sections[currentStep];
     setAnswers(prev => ({
       ...prev,
       [`${area}_${questionIndex}`]: value
@@ -251,8 +282,8 @@ export default function Home() {
   };
 
   const handleNextSection = () => {
-    if (currentSection < sections.length - 1) {
-      setCurrentSection(currentSection + 1);
+    if (currentStep < sections.length - 1) {
+      setCurrentStep(currentStep + 1);
       setQuestionIndex(0);
       window.scrollTo(0, 0);
     } else {
@@ -263,8 +294,8 @@ export default function Home() {
   };
 
   const handlePreviousSection = () => {
-    if (currentSection > 0) {
-      setCurrentSection(currentSection - 1);
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
       setQuestionIndex(0);
       window.scrollTo(0, 0);
     }
@@ -272,22 +303,10 @@ export default function Home() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
     const loadingToast = toast.loading('Bezig met verzenden...');
     
     try {
       const scores = calculateAreaScores();
-
-      // Update Firestore document to include new fields
-      const docRef = await addDoc(collection(db, "responses"), {
-        name,
-        email,
-        phoneNumber,
-        city,
-        age,
-        scores,
-        timestamp: new Date(),
-      });
 
       // Make sure html2pdf is loaded
       if (!html2pdf) {
@@ -334,6 +353,8 @@ export default function Home() {
           toast.success('De resultaten zijn verzonden naar je e-mail!', {
             id: loadingToast,
           });
+          // Move to next step
+          setCurrentStep(currentStep + 1);
         } else {
           throw new Error('Email sending failed');
         }
@@ -342,7 +363,7 @@ export default function Home() {
         throw pdfError;
       }
     } catch (error) {
-      console.error('Error while submitting data to Firestore:', error);
+      console.error('Error:', error);
       toast.error('Er is iets misgegaan bij het verzenden.', {
         id: loadingToast,
       });
@@ -462,12 +483,12 @@ export default function Home() {
           <>
             <div className="text-center mb-8">
               <div className="text-sm text-gray-500">
-                Gebied {currentSection + 1} van {sections.length}
+                Gebied {currentStep + 1} van {sections.length}
               </div>
               <div className="w-full bg-gray-200 h-2.5 mb-4">
                 <div 
                   className="bg-blue-600 h-2.5" 
-                  style={{ width: `${(currentSection + 1) / sections.length * 100}%` }}
+                  style={{ width: `${(currentStep + 1) / sections.length * 100}%` }}
                 />
               </div>
               <div className="text-2xl mt-2">
@@ -521,11 +542,11 @@ export default function Home() {
                 type="button"
                 onClick={handlePreviousSection}
                 className={`flex-1 py-2 px-4 rounded ${
-                  currentSection === 0 
+                  currentStep === 0 
                     ? 'bg-gray-300 cursor-not-allowed' 
                     : 'bg-gray-300'
                 }`}
-                disabled={currentSection === 0}
+                disabled={currentStep === 0}
               >
                 Vorige
               </button>
@@ -540,7 +561,7 @@ export default function Home() {
                 }`}
                 disabled={Object.keys(answers).filter(key => key.startsWith(currentArea)).length !== currentAreaQuestions.length}
               >
-                {currentSection === sections.length - 1 ? 'Naar resultaten' : 'Volgende'}
+                {currentStep === sections.length - 1 ? 'Naar resultaten' : 'Volgende'}
               </button>
             </div>
           </>
@@ -643,6 +664,15 @@ export default function Home() {
         )}
       </form>
       
+      {questionIndex === totalQuestions && (
+        <div style={{ display: 'none' }}>
+          <PdfTemplate 
+            answers={answers}
+            questions={questions}
+            name={name}
+          />
+        </div>
+      )}
     </main>
   );
 }
