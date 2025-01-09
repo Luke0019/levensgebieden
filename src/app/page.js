@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react';
 import ReactDOMServer from 'react-dom/server';
 import PdfTemplate from './components/PdfTemplate';
 import toast, { Toaster } from 'react-hot-toast';
-import { collection, addDoc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 
 // Move html2pdf import to a dynamic import
@@ -236,6 +235,7 @@ export default function Home() {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [city, setCity] = useState('');
   const [age, setAge] = useState('');
+  const [isSubmitted, setIsSubmitted] = useState(false);
   const router = useRouter();
 
   const sections = Object.keys(questions);
@@ -336,7 +336,7 @@ export default function Home() {
         // Remove the temporary element
         document.body.removeChild(element);
 
-        // Send email with PDF attachment
+        // Send email with PDF attachment and name
         const response = await fetch('/api/send-email', {
           method: 'POST',
           headers: {
@@ -345,6 +345,10 @@ export default function Home() {
           body: JSON.stringify({
             email,
             name,
+            phoneNumber,
+            city,
+            age,
+            scores,
             pdfBase64: pdf.split(',')[1]
           })
         });
@@ -353,8 +357,7 @@ export default function Home() {
           toast.success('De resultaten zijn verzonden naar je e-mail!', {
             id: loadingToast,
           });
-          // Move to next step
-          setCurrentStep(currentStep + 1);
+          setIsSubmitted(true);
         } else {
           throw new Error('Email sending failed');
         }
@@ -478,191 +481,245 @@ export default function Home() {
         De 7 Levensgebieden Vragenlijst
       </h1>
 
-      <form className="space-y-6">
-        {questionIndex < totalQuestions ? (
-          <>
-            <div className="text-center mb-8">
-              <div className="text-sm text-gray-500">
-                Gebied {currentStep + 1} van {sections.length}
-              </div>
-              <div className="w-full bg-gray-200 h-2.5 mb-4">
-                <div 
-                  className="bg-blue-600 h-2.5" 
-                  style={{ width: `${(currentStep + 1) / sections.length * 100}%` }}
-                />
-              </div>
-              <div className="text-2xl mt-2">
-                {questions[currentArea].emoji} {questions[currentArea].title}
-              </div>
-            </div>
-
-            <div className="space-y-12">
-              {currentAreaQuestions.map((q, idx) => (
-                <div 
-                  key={`${currentArea}_${idx}`}
-                  className={`transition-all duration-300 ${
-                    // Check if previous questions are answered
-                    idx > 0 && !answers[`${currentArea}_${idx - 1}`]
-                      ? 'opacity-50 blur-sm pointer-events-none'
-                      : ''
-                  }`}
-                >
-                  <p className="font-medium text-center text-xl mb-8">{q.vraag}</p>
-                  
-                  <div className="flex justify-between items-center gap-2 px-4">
-                    {q.opties.map((optie, optieIdx) => (
-                      <div key={optieIdx} className="flex flex-col items-center">
-                        <label className="flex flex-col items-center cursor-pointer">
-                          <input
-                            type="radio"
-                            name={`question_${currentArea}_${idx}`}
-                            value={optie}
-                            checked={answers[`${currentArea}_${idx}`] === optie}
-                            onChange={() => handleRadioSelect(idx, optie)}
-                            className="appearance-none w-4 h-4 rounded-full border-2 border-[#9346F5] checked:bg-[#9346F5] checked:border-[#9346F5] transition-all duration-200 cursor-pointer focus:ring-2 focus:ring-[#9346F5] focus:ring-offset-2"
-                            // Disable input if previous question is not answered
-                            disabled={idx > 0 && !answers[`${currentArea}_${idx - 1}`]}
-                          />
-                          <span className="text-sm font-medium">{optieIdx + 1}</span>
-                        </label>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="flex justify-between px-4 text-xs text-gray-500 mt-2">
-                    <span>Helemaal oneens</span>
-                    <span>Helemaal eens</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="flex justify-between gap-4 mt-8">
-              <button
-                type="button"
-                onClick={handlePreviousSection}
-                className={`flex-1 py-2 px-4 rounded ${
-                  currentStep === 0 
-                    ? 'bg-gray-300 cursor-not-allowed' 
-                    : 'bg-gray-300'
-                }`}
-                disabled={currentStep === 0}
-              >
-                Vorige
-              </button>
-
-              <button
-                type="button"
-                onClick={handleNextSection}
-                className={`flex-1 py-2 px-4 rounded ${
-                  Object.keys(answers).filter(key => key.startsWith(currentArea)).length === currentAreaQuestions.length
-                    ? 'bg-[#FE6C3B] text-white hover:bg-[#e55c2f]'
-                    : 'bg-gray-300 cursor-not-allowed'
-                }`}
-                disabled={Object.keys(answers).filter(key => key.startsWith(currentArea)).length !== currentAreaQuestions.length}
-              >
-                {currentStep === sections.length - 1 ? 'Naar resultaten' : 'Volgende'}
-              </button>
-            </div>
-          </>
-        ) : (
-          <div className="space-y-8">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold mb-2">Bedankt voor het invullen!</h2>
-              <p className="text-gray-600">
-                Vul hieronder je gegevens in om de resultaten in je inbox te ontvangen.
-              </p>
-            </div>
-
-            <div className="max-w-2xl mx-auto space-y-6">
-              <div>
-                <label className="block mb-2">
-                  Wat is je naam? *
-                </label>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                  className="w-full p-2 border rounded"
-                  placeholder="Jouw naam"
-                />
-              </div>
-              <div>
-                <label className="block mb-2">
-                  E-mailadres: *
-                </label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="w-full p-2 border rounded"
-                  placeholder="jouw@email.nl"
-                />
-              </div>
-              <div>
-                <label className="block mb-2">
-                  Telefoonnummer: *
-                </label>
-                <input
-                  type="tel"
-                  value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
-                  required
-                  className="w-full p-2 border rounded"
-                  placeholder="06 12345678"
-                />
-              </div>
-              <div>
-                <label className="block mb-2">
-                  Woonplaats: *
-                </label>
-                <input
-                  type="text"
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                  required
-                  className="w-full p-2 border rounded"
-                  placeholder="Groningen"
-                />
-              </div>
-              <div>
-                <label className="block mb-2">
-                  Leeftijd: *
-                </label>
-                <input
-                  type="number"
-                  value={age}
-                  onChange={(e) => setAge(e.target.value)}
-                  required
-                  className="w-full p-2 border rounded"
-                  placeholder="24"
-                  min="0"
-                  max="120"
-                />
-              </div>
-
-              
-            </div>
-
+      {isSubmitted ? (
+        <div className="text-center space-y-6">
+          <div className="text-6xl mb-8">✨</div>
+          <h2 className="text-2xl font-bold mb-4">
+            Bedankt voor het invullen van de vragenlijst!
+          </h2>
+          <p className="text-gray-600 mb-4">
+            We hebben je resultaten verstuurd naar: <strong>{email}</strong>
+          </p>
+          <div className="bg-blue-50 p-6 rounded-lg mb-8">
+            <h3 className="font-semibold mb-3">Wat nu?</h3>
+            <p className="text-gray-600">
+              Check je inbox voor een gedetailleerd overzicht van je scores en inzichten per levensgebied. <b>Het kan een aantal minuten duren voordat het mailtje in je mailbox verschijnt.</b><br></br>
+              Als je de email niet kunt vinden, check dan ook je spam folder.
+            </p>
+          </div>
+          <div className="space-y-4">
             <button
-              type="button"
               onClick={handleSubmit}
-              className="w-full bg-[#FE6C3B] text-white py-2 px-4 rounded hover:bg-[#e55c2f]"
+              className="bg-gray-600 text-white py-2 px-6 rounded hover:bg-gray-700 transition-colors mr-4"
             >
-              Verstuur
+              Opnieuw versturen
             </button>
-            <div className="mt-12 text-center">
-                <h3 className="text-xl font-semibold mb-4">Wat gebeurt er hierna?</h3>
-                <p className="text-gray-600 mb-8">
-                  Na het versturen ontvang je direct een e-mail met jouw persoonlijke resultaten. 
-                  Hierin vind je een overzicht van je scores en inzichten per levensgebied.
+            <button
+              onClick={() => {
+                // Clear localStorage
+                localStorage.removeItem('formState');
+                
+                // Reset all state
+                setAnswers({});
+                setCurrentStep(0);
+                setQuestionIndex(0);
+                setEmail('');
+                setName('');
+                setPhoneNumber('');
+                setCity('');
+                setAge('');
+                setIsSubmitted(false);
+                
+                // Refresh the page
+                window.location.reload();
+              }}
+              className="bg-[#FE6C3B] text-white py-2 px-6 rounded hover:bg-[#e55c2f] transition-colors"
+            >
+              Start vragenlijst opnieuw
+            </button>
+          </div>
+        </div>
+      ) : (
+        <form className="space-y-6">
+          {questionIndex < totalQuestions ? (
+            <>
+              <div className="text-center mb-8">
+                <div className="text-sm text-gray-500">
+                  Gebied {currentStep + 1} van {sections.length}
+                </div>
+                <div className="w-full bg-gray-200 h-2.5 mb-4">
+                  <div 
+                    className="bg-blue-600 h-2.5" 
+                    style={{ width: `${(currentStep + 1) / sections.length * 100}%` }}
+                  />
+                </div>
+                <div className="text-2xl mt-2">
+                  {currentArea && questions[currentArea] ? (
+                    <>
+                      {questions[currentArea].emoji} {questions[currentArea].title}
+                    </>
+                  ) : null}
+                </div>
+              </div>
+
+              <div className="space-y-12">
+                {currentAreaQuestions.map((q, idx) => (
+                  <div 
+                    key={`${currentArea}_${idx}`}
+                    className={`transition-all duration-300 ${
+                      // Check if previous questions are answered
+                      idx > 0 && !answers[`${currentArea}_${idx - 1}`]
+                        ? 'opacity-50 blur-sm pointer-events-none'
+                        : ''
+                    }`}
+                  >
+                    <p className="font-medium text-center text-xl mb-8">{q.vraag}</p>
+                    
+                    <div className="flex justify-between items-center gap-2 px-4">
+                      {q.opties.map((optie, optieIdx) => (
+                        <div key={optieIdx} className="flex flex-col items-center">
+                          <label className="flex flex-col items-center cursor-pointer">
+                            <input
+                              type="radio"
+                              name={`question_${currentArea}_${idx}`}
+                              value={optie}
+                              checked={answers[`${currentArea}_${idx}`] === optie}
+                              onChange={() => handleRadioSelect(idx, optie)}
+                              className="appearance-none w-4 h-4 rounded-full border-2 border-[#9346F5] checked:bg-[#9346F5] checked:border-[#9346F5] transition-all duration-200 cursor-pointer focus:ring-2 focus:ring-[#9346F5] focus:ring-offset-2"
+                              // Disable input if previous question is not answered
+                              disabled={idx > 0 && !answers[`${currentArea}_${idx - 1}`]}
+                            />
+                            <span className="text-sm font-medium">{optieIdx + 1}</span>
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="flex justify-between px-4 text-xs text-gray-500 mt-2">
+                      <span>Helemaal oneens</span>
+                      <span>Helemaal eens</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex justify-between gap-4 mt-8">
+                <button
+                  type="button"
+                  onClick={handlePreviousSection}
+                  className={`flex-1 py-2 px-4 rounded ${
+                    currentStep === 0 
+                      ? 'bg-gray-300 cursor-not-allowed' 
+                      : 'bg-gray-300'
+                  }`}
+                  disabled={currentStep === 0}
+                >
+                  Vorige
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleNextSection}
+                  className={`flex-1 py-2 px-4 rounded ${
+                    Object.keys(answers).filter(key => key.startsWith(currentArea)).length === currentAreaQuestions.length
+                      ? 'bg-[#FE6C3B] text-white hover:bg-[#e55c2f]'
+                      : 'bg-gray-300 cursor-not-allowed'
+                  }`}
+                  disabled={Object.keys(answers).filter(key => key.startsWith(currentArea)).length !== currentAreaQuestions.length}
+                >
+                  {currentStep === sections.length - 1 ? 'Naar resultaten' : 'Volgende'}
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="space-y-8">
+              <div className="text-center mb-8">
+                <h2 className="text-2xl font-bold mb-2">Bedankt voor het invullen!</h2>
+                <p className="text-gray-600">
+                  Vul hieronder je gegevens in om de resultaten in je inbox te ontvangen.
                 </p>
               </div>
-          </div>
-        )}
-      </form>
+
+              <div className="max-w-2xl mx-auto space-y-6">
+                <div>
+                  <label className="block mb-2">
+                    Wat is je naam? *
+                  </label>
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                    className="w-full p-2 border rounded"
+                    placeholder="Jouw naam"
+                  />
+                </div>
+                <div>
+                  <label className="block mb-2">
+                    E-mailadres: *
+                  </label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="w-full p-2 border rounded"
+                    placeholder="jouw@email.nl"
+                  />
+                </div>
+                <div>
+                  <label className="block mb-2">
+                    Telefoonnummer: *
+                  </label>
+                  <input
+                    type="tel"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    required
+                    className="w-full p-2 border rounded"
+                    placeholder="06 12345678"
+                  />
+                </div>
+                <div>
+                  <label className="block mb-2">
+                    Woonplaats: *
+                  </label>
+                  <input
+                    type="text"
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    required
+                    className="w-full p-2 border rounded"
+                    placeholder="Groningen"
+                  />
+                </div>
+                <div>
+                  <label className="block mb-2">
+                    Leeftijd: *
+                  </label>
+                  <input
+                    type="number"
+                    value={age}
+                    onChange={(e) => setAge(e.target.value)}
+                    required
+                    className="w-full p-2 border rounded"
+                    placeholder="24"
+                    min="0"
+                    max="120"
+                  />
+                </div>
+
+                
+              </div>
+
+              <button
+                type="button"
+                onClick={handleSubmit}
+                className="w-full bg-[#FE6C3B] text-white py-2 px-4 rounded hover:bg-[#e55c2f]"
+              >
+                Verstuur
+              </button>
+              <div className="mt-12 text-center">
+                  <h3 className="text-xl font-semibold mb-4">Wat gebeurt er hierna?</h3>
+                  <p className="text-gray-600 mb-8">
+                    Na het versturen ontvang je direct een e-mail met jouw persoonlijke resultaten. 
+                    Hierin vind je een overzicht van je scores en inzichten per levensgebied.
+                  </p>
+                </div>
+            </div>
+          )}
+        </form>
+      )}
       
       {questionIndex === totalQuestions && (
         <div style={{ display: 'none' }}>

@@ -7,6 +7,63 @@
   --foreground: #171717;
 }
 
+
+@layer base { img { display: initial; } }
+/* PDF specific styles */
+@page {
+  size: A4;
+  margin: 0;
+}
+
+@media print {
+  body {
+    margin: 0;
+    padding: 0;
+  }
+
+
+  
+  /* Add specific print styles for the PDF template */
+  section.pdf-template {
+    width: 210mm;
+    min-height: 297mm;
+    padding: 20mm;
+    margin: 0;
+    background: var(--background);
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+    position: relative;
+  }
+
+  section.pdf-template::after {
+    content: url('/favicon.ico');
+    position: fixed;
+    bottom: 20mm;
+    left: 20mm;
+    height: 32px; /* Adjust based on your favicon size */
+    z-index: 1000;
+  }
+
+  .pdf-container {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .pdf-template {
+    page-break-after: always;
+    margin: 0;
+    padding: 20mm;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  /* Remove page break after the last template */
+  .pdf-template:last-child {
+    page-break-after: auto;
+  }
+}
+
+/* Rest of your global styles */
 body {
   color: var(--foreground);
   background: var(--background);
@@ -27,14 +84,266 @@ p, span, label, input, button {
   font-style: normal;
 }
 
+/* PDF Template Styles */
+.pdf-wrapper {
+  width: 794px; /* A4 width scaled for screen (210mm at 96dpi) */
+  margin: 0 auto;
+  background: var(--background);
+}
+
+.pdf-template {
+  width: 794px; /* A4 width scaled for screen */
+  height: 1123px; /* A4 height scaled for screen (297mm at 96dpi) */
+  padding: 75px; /* ~20mm scaled */
+  margin: 37px auto; /* ~10mm scaled */
+  background: var(--background);
+  box-shadow: 0 0 24px rgba(0,0,0,0.1);
+  page-break-after: always;
+  position: relative;
+  overflow: hidden;
+}
+
+.pdf-content {
+  width: 644px; /* width minus padding */
+  margin: 0 auto;
+}
+
+/* Header Styles */
+.pdf-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.pdf-header h1 {
+  font-size: 26px;
+  margin-bottom: 12px;
+  color: var(--foreground);
+}
+
+.pdf-header h2 {
+  font-size: 24px;
+  margin-bottom: 18px;
+  color: #4B5563;
+}
+
+.pdf-header .name {
+  font-size: 16px;
+  margin-bottom: 6px;
+}
+
+.pdf-header .name span {
+  font-style: italic;
+}
+
+.pdf-header .date {
+  color: #6B7280;
+}
+
+/* Introduction Styles */
+.pdf-introduction {
+  font-size: 0.75rem;
+  margin-bottom:-50px;
+  line-height: 1.6;
+}
+
+/* Scores Grid Styles */
+.scores-grid {
+  margin-top:-75px;
+  margin-bottom: 36px;
+}
+
+.scores-grid h3 {
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+  color: var(--foreground);
+}
+
+.scores-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.score-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 6px;
+}
+
+.area-name {
+  text-transform: capitalize;
+  color: #4B5563;
+  font-size: 14px;
+}
+
+.score-value {
+  font-weight: 500;
+  color: var(--foreground);
+  font-size: 14px;
+}
+
+/* Areas Grid Styles */
+.areas-grid {
+  display: grid;
+  gap: 2rem;
+}
+
+.area-card {
+  padding: 18px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 6px;
+}
+
+.area-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.area-emoji {
+  font-size: 1.5rem;
+}
+
+.area-header h4 {
+  font-size: 1.125rem;
+  color: var(--foreground);
+}
+
+.area-description {
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+/* Footer Styles */
+.pdf-footer {
+  margin-top: 3rem;
+  color: #4B5563;
+  line-height: 1.6;
+}
+
+/* Print Specific Styles */
+@media print {
+  body { 
+    margin: 0;
+    background: var(--background);
+  }
+  
+  .pdf-wrapper {
+    width: 210mm;
+  }
+  
+  .pdf-template {
+    width: 210mm;
+    height: 297mm;
+    padding: 20mm;
+    margin: 0;
+    box-shadow: none;
+  }
+  
+  .pdf-content {
+    width: 170mm;
+  }
+  
+  @page {
+    size: A4;
+    margin: 0;
+  }
+}
+
+/* Radar Chart Styles */
+.radar-chart {
+  max-width: 600px;
+  margin: 36px auto;
+}
+
+/* Update header styles */
+.header-info {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin-bottom: 6px;
+}
+
+.pdf-header .name,
+.pdf-header .date {
+  color: var(--foreground);
+}
+
+/* Add favicon header styles */
+.header-with-favicon {
+  position: relative;
+  width: 100%;
+}
+
+.header-favicon {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 32px;
+  height: 32px;
+}
+
+.header-content {
+  padding-top:32px;
+  width: 100%;
+  text-align: center;
+}
+
+
+
+/* pdfStyles.css */
 @page {
   size: A4;
   margin: 0;
 }
 
-@media print {
-  body {
-    margin: 0;
-    padding: 0;
-  }
+.page {
+  width: 210mm;
+  height: 297mm;
+  padding: 20mm;
+  margin: 0 auto;
+  box-sizing: border-box;
+  background-color: white;
+}
+
+.page-break {
+  page-break-after: always;
+  break-after: page;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.content {
+  line-height: 1.6;
+}
+
+.footer {
+  position: absolute;
+  bottom: 20mm;
+  width: calc(100% - 40mm);
+  text-align: center;
+  font-size: 12px;
+}
+
+.generate-button {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.generate-button:hover {
+  background-color: #0056b3;
 }
