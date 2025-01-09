@@ -28,7 +28,7 @@ export async function POST(request) {
       MessageStream: 'outbound'
     });
 
-    /* Commented out notification email to Spark
+    
     await client.sendEmail({
       From: 'info@wijzijnspark.nl',
       To: 'info@wijzijnspark.nl',
@@ -51,7 +51,7 @@ Datum: ${new Date().toLocaleDateString('nl-NL')}
       `,
       MessageStream: 'outbound'
     });
-    */
+    
 
     return new Response(JSON.stringify({ message: 'Emails sent successfully' }), {
       status: 200,
