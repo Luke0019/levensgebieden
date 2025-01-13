@@ -326,7 +326,7 @@ export default function Home() {
           answers,
         }),
       });
-    
+        
       if (!notionResponse.ok) {
         throw new Error('Failed to save to Notion');
       }
@@ -736,14 +736,8 @@ export default function Home() {
                   </label>
                   <input
                     type="date"
-                    value={birthDate.split('-').reverse().join('-')}
-                    onChange={(e) => {
-                      const date = new Date(e.target.value);
-                      const day = String(date.getDate()).padStart(2, '0');
-                      const month = String(date.getMonth() + 1).padStart(2, '0');
-                      const year = date.getFullYear();
-                      setBirthDate(`${day}-${month}-${year}`);
-                    }}
+                    value={birthDate}
+                    onChange={(e) => setBirthDate(e.target.value)}
                     required
                     className="w-full p-2 border rounded"
                     max={new Date().toISOString().split('T')[0]}

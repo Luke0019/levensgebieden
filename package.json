@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@nextui-org/date-picker": "^2.3.9",
     "@notionhq/client": "^2.2.15",
     "chart.js": "^4.4.7",
     "firebase": "^11.1.0",
