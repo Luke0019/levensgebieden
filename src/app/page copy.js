@@ -234,7 +234,7 @@ export default function Home() {
   const [name, setName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [city, setCity] = useState('');
-  const [birthDate, setBirthDate] = useState('');
+  const [age, setAge] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
@@ -310,27 +310,6 @@ export default function Home() {
     try {
       const scores = calculateAreaScores();
 
-      // Save to Notion
-      const notionResponse = await fetch('/api/save-to-notion', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email,
-          name,
-          phoneNumber,
-          city,
-          birthDate,
-          scores,
-          answers,
-        }),
-      });
-    
-      if (!notionResponse.ok) {
-        throw new Error('Failed to save to Notion');
-      }
-
       // Make sure html2pdf is loaded
       if (!html2pdf) {
         await import('html2pdf.js').then(module => {
@@ -370,7 +349,7 @@ export default function Home() {
             name,
             phoneNumber,
             city,
-            birthDate,
+            age,
             scores,
             pdfBase64: pdf.split(',')[1]
           })
@@ -500,22 +479,6 @@ export default function Home() {
     return points.join(' ');
   };
 
-  // Add this function near your other handlers
-  const formatPhoneNumber = (value) => {
-    // Remove all non-digit characters
-    const digits = value.replace(/\D/g, '');
-    
-    // Format for Dutch phone numbers
-    if (digits.startsWith('31')) {
-      // International format
-      return digits.replace(/(\d{2})(\d{2})(\d{4})(\d{3,4})/, '+$1 $2 $3 $4').trim();
-    } else if (digits.startsWith('0')) {
-      // National format
-      return digits.replace(/(\d{2})(\d{4})(\d{3,4})/, '$1 $2 $3').trim();
-    }
-    return digits;
-  };
-
   return (
     <main className="min-h-screen p-8 max-w-2xl mx-auto">
       <Toaster position="top-center" />
@@ -559,7 +522,7 @@ export default function Home() {
                 setName('');
                 setPhoneNumber('');
                 setCity('');
-                setBirthDate('');
+                setAge('');
                 setIsSubmitted(false);
                 
                 // Refresh the page
@@ -706,16 +669,11 @@ export default function Home() {
                   <input
                     type="tel"
                     value={phoneNumber}
-                    onChange={(e) => {
-                      const formattedNumber = formatPhoneNumber(e.target.value);
-                      setPhoneNumber(formattedNumber);
-                    }}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
                     required
-                    pattern="^(?:\+31|0)\s?(?:[1-9])(?:[\s.-]?\d{2}){4}$"
                     className="w-full p-2 border rounded"
                     placeholder="06 12345678"
                   />
-                  
                 </div>
                 <div>
                   <label className="block mb-2">
@@ -732,21 +690,17 @@ export default function Home() {
                 </div>
                 <div>
                   <label className="block mb-2">
-                    Geboortedatum: *
+                    Leeftijd: *
                   </label>
                   <input
-                    type="date"
-                    value={birthDate.split('-').reverse().join('-')}
-                    onChange={(e) => {
-                      const date = new Date(e.target.value);
-                      const day = String(date.getDate()).padStart(2, '0');
-                      const month = String(date.getMonth() + 1).padStart(2, '0');
-                      const year = date.getFullYear();
-                      setBirthDate(`${day}-${month}-${year}`);
-                    }}
+                    type="number"
+                    value={age}
+                    onChange={(e) => setAge(e.target.value)}
                     required
                     className="w-full p-2 border rounded"
-                    max={new Date().toISOString().split('T')[0]}
+                    placeholder="24"
+                    min="0"
+                    max="120"
                   />
                 </div>
 
@@ -756,7 +710,7 @@ export default function Home() {
               <button
                 type="button"
                 onClick={handleSubmit}
-                disabled={isSubmitting || !email || !name || !phoneNumber || !city || !birthDate}
+                disabled={isSubmitting || !email || !name || !phoneNumber || !city || !age}
                 className="w-full bg-[#FE6C3B] text-white py-2 px-4 rounded hover:bg-[#e55c2f] disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? (

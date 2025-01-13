@@ -9,10 +9,12 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@notionhq/client": "^2.2.15",
     "chart.js": "^4.4.7",
     "firebase": "^11.1.0",
     "html2pdf.js": "^0.10.2",
     "next": "15.1.2",
+    "pdfmake": "^0.2.18",
     "postmark": "^4.0.5",
     "puppeteer": "^23.11.1",
     "react": "^18.2.0",

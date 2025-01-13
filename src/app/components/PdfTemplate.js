@@ -7,7 +7,7 @@ import ReactMarkdown from 'react-markdown';
 const styles = {
     pdfContent: {
         width: '210mm',
-        height: '594mm',
+        height: '593mm',
         margin: '0 auto',
         padding: 0,
         boxSizing: 'border-box',
@@ -116,7 +116,7 @@ const PdfTemplate = ({ answers = {}, questions, name }) => {
                 useCORS: true,
                 letterRendering: true,
                 scrollY: -window.scrollY,
-                height: 594 * 3.78
+                height: 594 * 2
             },
             jsPDF: { 
                 unit: 'mm', 
