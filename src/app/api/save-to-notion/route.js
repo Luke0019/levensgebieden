@@ -4,8 +4,8 @@ const notion = new Client({
   auth: process.env.NOTION_API_KEY,
 });
 
-// const DATABASE_ID = process.env.NOTION_DATABASE_ID;
-const DATABASE_ID = '17abd1c3ca9180ec8e49c2f7f5e31a91'; // test database
+const DATABASE_ID = process.env.NOTION_DATABASE_ID;
+// const DATABASE_ID = '17abd1c3ca9180ec8e49c2f7f5e31a91'; // test database
 
 export async function POST(req) {
   try {
