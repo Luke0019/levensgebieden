@@ -1,4 +1,4 @@
-import PdfTemplate from "../components/PdfTemplate";
+import Workbook from "../components/Workbook";
 
 export default function Home() {
     // Dummy answers simulating completed questionnaire
@@ -57,7 +57,7 @@ export default function Home() {
 
     return(
         <div>
-            <PdfTemplate 
+            <Workbook 
                 answers={dummyAnswers}
                 questions={dummyQuestions}
                 name={'Luuk'}

@@ -7,7 +7,7 @@ import ReactMarkdown from 'react-markdown';
 const styles = {
     pdfContent: {
         width: '210mm',
-        height: '594mm',
+        height: '593mm',
         margin: '0 auto',
         padding: 0,
         boxSizing: 'border-box',
