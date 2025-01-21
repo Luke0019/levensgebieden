@@ -654,7 +654,7 @@ export default function Home() {
                   onClick={handleNextSection}
                   className={`flex-1 py-2 px-4 rounded ${
                     Object.keys(answers).filter(key => key.startsWith(currentArea)).length === currentAreaQuestions.length
-                      ? 'bg-[#FE6C3B] text-white hover:bg-[#e55c2f]'
+                      ? `bg-[#FE6C3B] text-white hover:bg-[#e55c2f] ${currentStep === 0 ? 'plausible-event-name=Next+Button+Click' : ''}`
                       : 'bg-gray-300 cursor-not-allowed'
                   }`}
                   disabled={Object.keys(answers).filter(key => key.startsWith(currentArea)).length !== currentAreaQuestions.length}
