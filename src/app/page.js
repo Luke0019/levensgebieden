@@ -528,14 +528,14 @@ export default function Home() {
     <main className="min-h-screen p-8 max-w-2xl mx-auto">
       <Toaster position="top-center" />
       <h1 className="text-3xl font-bold mb-8 text-center">
-        De 7 Levensgebieden Vragenlijst
+        De 7 Levensgebieden Quickscan
       </h1>
 
       {isSubmitted ? (
         <div className="text-center space-y-6">
           <div className="text-6xl mb-8">✨</div>
           <h2 className="text-2xl font-bold mb-4">
-            Bedankt voor het invullen van de vragenlijst!
+            Bedankt voor het invullen van de quickscan!
           </h2>
           <p className="text-gray-600 mb-4">
             We hebben je resultaten verstuurd naar: <strong>{email}</strong>
@@ -575,7 +575,7 @@ export default function Home() {
               }}
               className="bg-[#FE6C3B] text-white py-2 px-6 rounded hover:bg-[#e55c2f] transition-colors"
             >
-              Start vragenlijst opnieuw
+              Start quickscan opnieuw
             </button>
           </div>
         </div>
