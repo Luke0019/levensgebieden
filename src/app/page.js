@@ -237,6 +237,7 @@ export default function Home() {
   const [birthDate, setBirthDate] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const router = useRouter();
 
   const sections = Object.keys(questions);
@@ -304,6 +305,13 @@ export default function Home() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Add privacy policy validation
+    if (!privacyAccepted) {
+      toast.error('Je moet akkoord gaan met het privacybeleid');
+      return;
+    }
+    
     setIsSubmitting(true);
     const loadingToast = toast.loading('Bezig met verzenden...');
     
@@ -743,14 +751,26 @@ export default function Home() {
                     max={new Date().toISOString().split('T')[0]}
                   />
                 </div>
-
-                
+                <div className="mt-6">
+                  <label className="flex items-start space-x-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={privacyAccepted}
+                      onChange={(e) => setPrivacyAccepted(e.target.checked)}
+                      required
+                      className="mt-1 h-4 w-4 rounded border-gray-300 text-[#FE6C3B] focus:ring-[#FE6C3B]"
+                    />
+                    <span className="text-sm text-gray-600">
+                      Ik ga akkoord met het privacybeleid
+                    </span>
+                  </label>
+                </div>
               </div>
 
               <button
                 type="button"
                 onClick={handleSubmit}
-                disabled={isSubmitting || !email || !name || !phoneNumber || !city || !birthDate}
+                disabled={isSubmitting || !email || !name || !phoneNumber || !city || !birthDate || !privacyAccepted}
                 className="w-full bg-[#FE6C3B] text-white py-2 px-4 rounded hover:bg-[#e55c2f] disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? (
