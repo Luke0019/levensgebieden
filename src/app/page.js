@@ -528,7 +528,7 @@ export default function Home() {
     <main className="min-h-screen p-8 max-w-2xl mx-auto">
       <Toaster position="top-center" />
       <h1 className="text-3xl font-bold mb-8 text-center">
-        De 7 Levensgebieden Quickscan
+        De Spark Persoonlijke Ontwikkeling Quickscan
       </h1>
 
       {isSubmitted ? (
