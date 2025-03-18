@@ -10,7 +10,7 @@ const DATABASE_ID = process.env.NOTION_DATABASE_ID;
 
 export async function POST(req) {
   try {
-    const { name, email, phoneNumber, city, birthDate, scores, answers } = await req.json();
+    const { name, email, phoneNumber, city, birthDate, totalScore, answers } = await req.json();
 
     const response = await notion.pages.create({
       parent: {
@@ -32,40 +32,10 @@ export async function POST(req) {
         'Telefoonnummer': {
           phone_number: phoneNumber,
         },
-        'Woonplaats': {
-          rich_text: [
-            {
-              text: {
-                content: city,
-              },
-            },
-          ],
-        },
-        'Geboortedatum': {
-          date: {
-            start: birthDate,
-          }
-        },
-        'Existentieel': {
-          number: scores.existentieel,
-        },
-        'Emotioneel': {
-          number: scores.emotioneel,
-        },
-        'Cognitief': {
-          number: scores.cognitief,
-        },
-        'Fysiek': {
-          number: scores.fysiek,
-        },
-        'Sociaal': {
-          number: scores.sociaal,
-        },
-        'Materieel': {
-          number: scores.materieel,
-        },
-        'Creatief': {
-          number: scores.creatief,
+      
+        
+        'Resultaat': {
+          number: totalScore
         },
       },
     });

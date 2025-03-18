@@ -4,37 +4,17 @@ const client = new ServerClient(process.env.POSTMARK_API_TOKEN);
 
 export async function POST(request) {
   try {
-    const { email, name, pdfBase64, phoneNumber, city, age, scores } = await request.json();
+    const { email, name, phoneNumber, city, age, scores } = await request.json();
 
-    // Send email with PDF to user
-    await client.sendEmailWithTemplate({
-      TemplateId: 38528908,
-      From: 'info@wijzijnspark.nl',
-      To: email,
-      TemplateModel: {
-        name: name,
-        message: 'Bedankt voor het invullen van de 7 Levensgebieden Vragenlijst.',
-        signature: 'Team Spark',
-        year: new Date().getFullYear(),
-        companyName: 'Spark'
-      },
-      Attachments: [
-        {
-          Name: 'levensgebieden-resultaten.pdf',
-          Content: pdfBase64,
-          ContentType: 'application/pdf'
-        }
-      ],
-      MessageStream: 'outbound'
-    });
+  
 
     
     await client.sendEmail({
       From: 'info@wijzijnspark.nl',
       To: 'info@wijzijnspark.nl',
-      Subject: 'Nieuwe 7 Levensgebieden Vragenlijst Ingevuld',
+      Subject: `Nieuwe 'Digitale verslaving test' Ingevuld`,
       TextBody: `
-    Nieuwe vragenlijst ingevuld:
+    Nieuwe 'Digitale verslaving test' ingevuld:
 
     Naam: ${name}
     Email: ${email}

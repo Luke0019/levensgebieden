@@ -1,248 +1,111 @@
 'use client';
 import { useState, useEffect } from 'react';
-import ReactDOMServer from 'react-dom/server';
-import PdfTemplate from './components/PdfTemplate';
 import toast, { Toaster } from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 
-// Move html2pdf import to a dynamic import
-let html2pdf;
-if (typeof window !== 'undefined') {
-  import('html2pdf.js').then(module => {
-    html2pdf = module.default;
-  });
-}
+
 
 const questions = {
-  existentieel: {
-    emoji: "🧐",
-    title: "Existentieel",
+  page1: {
     questions: [
       {
-        vraag: "Ik heb het gevoel dat mijn leven een duidelijk doel heeft",
-        opties: ["Helemaal oneens", "Oneens", "Neutraal", "Eens", "Helemaal eens"]
+        vraag: "Hoe vaak ben je langer digitaal actief dan je zou willen?",
+        opties: ["Niet van toepassing", "Zelden", "Af en toe", "Regelmatig", "Vaak", "Altijd"]
       },
       {
-        vraag: "Ik heb het gevoel dat ik in een richting beweeg die ik betekenisvol vind",
-        opties: ["Helemaal oneens", "Oneens", "Neutraal", "Eens", "Helemaal eens"]
+        vraag: "In hoeverre heb je het gevoel dat het huishouden leidt onder je digitale activiteit?",
+        opties: ["Niet van toepassing", "Zelden", "Af en toe", "Regelmatig", "Vaak", "Altijd"]
       },
       {
-        vraag: "Ik heb het gevoel dat ik verbonden ben met iets dat groter is dan ik zelf",
-        opties: ["Helemaal oneens", "Oneens", "Neutraal", "Eens", "Helemaal eens"]
+        vraag: "Hoeveel van je sociale contact vindt digitaal plaats?",
+        opties: ["Niet van toepassing", "Zelden", "Af en toe", "Regelmatig", "Vaak", "Altijd"]
       },
       {
-        vraag: "Ik heb een onderliggend gevoel van rust, ook in onzekere tijden",
-        opties: ["Helemaal oneens", "Oneens", "Neutraal", "Eens", "Helemaal eens"]
+        vraag: "In hoeverre klagen mensen om je heen over je digitale activiteit?",
+        opties: ["Niet van toepassing", "Zelden", "Af en toe", "Regelmatig", "Vaak", "Altijd"]
       },
       {
-        vraag: "Ik heb het gevoel dat mijn ontwikkeling me helpt om de dingen te doen die ik belangrijk vind",
-        opties: ["Helemaal oneens", "Oneens", "Neutraal", "Eens", "Helemaal eens"]
+        vraag: "In hoeverre leidt je productiviteit op school/werk onder je digitale activiteit?",
+        opties: ["Niet van toepassing", "Zelden", "Af en toe", "Regelmatig", "Vaak", "Altijd"]
       },
       {
-        vraag: "Ik heb een optimistische blik op de toekomst",
-        opties: ["Helemaal oneens", "Oneens", "Neutraal", "Eens", "Helemaal eens"]
+        vraag: "Hoevaak check je uit gewoonte je e-mail of berichten terwijl je eigenlijk met iets anders bezig bent?",
+        opties: ["Niet van toepassing", "Zelden", "Af en toe", "Regelmatig", "Vaak", "Altijd"]
+      },
+      {
+        vraag: "Hoevaak is digitale activiteit een manier om vervelende gevoelens of gedachten uit de weg te gaan?",
+        opties: ["Niet van toepassing", "Zelden", "Af en toe", "Regelmatig", "Vaak", "Altijd"]
+      },
+      {
+        vraag: "Hoevaak kijk je uit naar momenten waarop je weer digitaal actief kan zijn?",
+        opties: ["Niet van toepassing", "Zelden", "Af en toe", "Regelmatig", "Vaak", "Altijd"]
+      },
+      {
+        vraag: "Hoevaak voel je je verveeld, leeg, of vreugdeloos als je niet digitaal actief bent?",
+        opties: ["Niet van toepassing", "Zelden", "Af en toe", "Regelmatig", "Vaak", "Altijd"]
+      },
+      {
+        vraag: "Hoe vaak ben je snauwerig, kortaf, of chagrijnig als je digitale activiteit wordt onderbroken?",
+        opties: ["Niet van toepassing", "Zelden", "Af en toe", "Regelmatig", "Vaak", "Altijd"]
       }
     ]
   },
-  emotioneel: {
-    emoji: "💟",
-    title: "Emotioneel",
+  page2: {
     questions: [
       {
-        vraag: "In uitdagende situaties lukt het me om mijn emoties effectief te reguleren",
-        opties: ["Helemaal oneens", "Oneens", "Neutraal", "Eens", "Helemaal eens"]
+        vraag: "In hoeverre slaap je slechter door je digitale activiteit?",
+        opties: ["Niet van toepassing", "Zelden", "Af en toe", "Regelmatig", "Vaak", "Altijd"]
       },
       {
-        vraag: "Ik voel me emotioneel voldaan met de relaties in mijn leven",
-        opties: ["Helemaal oneens", "Oneens", "Neutraal", "Eens", "Helemaal eens"]
+        vraag: "Hoevaak overtuig je jezelf tevergeefs dat je 'nog maar heel even' digitaal actief blijft?",
+        opties: ["Niet van toepassing", "Zelden", "Af en toe", "Regelmatig", "Vaak", "Altijd"]
       },
       {
-        vraag: "Het lukt me om mijn emoties vrij en open te uiten",
-        opties: ["Helemaal oneens", "Oneens", "Neutraal", "Eens", "Helemaal eens"]
+        vraag: "Hoevaak probeer je te minderen, maar lukt dat niet?",
+        opties: ["Niet van toepassing", "Zelden", "Af en toe", "Regelmatig", "Vaak", "Altijd"]
       },
       {
-        vraag: "Ik ervaar meer positieve emoties dan negatieve emoties",
-        opties: ["Helemaal oneens", "Oneens", "Neutraal", "Eens", "Helemaal eens"]
+        vraag: "In hoeverre voel je de druk om de tijd die je digitaal actief bent voor anderen te verbergen?",
+        opties: ["Niet van toepassing", "Zelden", "Af en toe", "Regelmatig", "Vaak", "Altijd"]
       },
       {
-        vraag: "Ik heb gezonde copingsmechanismes om met stress om te gaan",
-        opties: ["Helemaal oneens", "Oneens", "Neutraal", "Eens", "Helemaal eens"]
+        vraag: "Hoevaak laat je sociale interacties aan je voorbij gaan, en ben je in plaats daarvan digitaal actief?",
+        opties: ["Niet van toepassing", "Zelden", "Af en toe", "Regelmatig", "Vaak", "Altijd"]
       },
       {
-        vraag: "Ik herstel snel van emotionele tegenslagen",
-        opties: ["Helemaal oneens", "Oneens", "Neutraal", "Eens", "Helemaal eens"]
-      }
-    ]
-  },
-  cognitief: {
-    emoji: "🧠",
-    title: "Cognitief",
-    questions: [
-      {
-        vraag: "Ik ben tevreden met mijn vermogen om me te concentreren en focussen",
-        opties: ["Helemaal oneens", "Oneens", "Neutraal", "Eens", "Helemaal eens"]
+        vraag: "Hoevaak heb je negatieve gevoelens als je offline bent, die weer verdwijnen als je digitaal actief bent?",
+        opties: ["Niet van toepassing", "Zelden", "Af en toe", "Regelmatig", "Vaak", "Altijd"]
       },
       {
-        vraag: "Ik voel me mentaal gestimuleerd door mijn dagelijkse activiteiten",
-        opties: ["Helemaal oneens", "Oneens", "Neutraal", "Eens", "Helemaal eens"]
+        vraag: "Hoevaak check je je telefoon zonder daar een bewuste intentie bij te hebben?",
+        opties: ["Niet van toepassing", "Zelden", "Af en toe", "Regelmatig", "Vaak", "Altijd"]
       },
       {
-        vraag: "Ik ben tevreden met de dingen die ik leer in mijn dagelijkse activiteiten",
-        opties: ["Helemaal oneens", "Oneens", "Neutraal", "Eens", "Helemaal eens"]
+        vraag: "Hoevaak voel je je slechter nadat je op sociale media hebt gezet?",
+        opties: ["Niet van toepassing", "Zelden", "Af en toe", "Regelmatig", "Vaak", "Altijd"]
       },
       {
-        vraag: "Ik neem de tijd om te reflecteren op mijn gevoelens en gedachten",
-        opties: ["Helemaal oneens", "Oneens", "Neutraal", "Eens", "Helemaal eens"]
-      },
-      {
-        vraag: "Ik voel me mentaal weerbaar",
-        opties: ["Helemaal oneens", "Oneens", "Neutraal", "Eens", "Helemaal eens"]
-      },
-      {
-        vraag: "Ik leer graag over nieuwe mensen, concepten, en ideeën",
-        opties: ["Helemaal oneens", "Oneens", "Neutraal", "Eens", "Helemaal eens"]
-      }
-    ]
-  },
-  fysiek: {
-    emoji: "💪🏼",
-    title: "Fysiek",
-    questions: [
-      {
-        vraag: "Ik heb genoeg energie om de dingen te doen die ik graag wil doen",
-        opties: ["Helemaal oneens", "Oneens", "Neutraal", "Eens", "Helemaal eens"]
-      },
-      {
-        vraag: "Ik ben tevreden met de kwaliteit en hoeveelheid slaap die ik krijg",
-        opties: ["Helemaal oneens", "Oneens", "Neutraal", "Eens", "Helemaal eens"]
-      },
-      {
-        vraag: "Het lukt mij om te eten op een manier die me gezond en vitaal laat voelen",
-        opties: ["Helemaal oneens", "Oneens", "Neutraal", "Eens", "Helemaal eens"]
-      },
-      {
-        vraag: "Ik ben goed in staat om signalen van mijn lichaam te observeren",
-        opties: ["Helemaal oneens", "Oneens", "Neutraal", "Eens", "Helemaal eens"]
-      },
-      {
-        vraag: "Het lukt me om een goede balans te vinden tussen inspanning en herstel",
-        opties: ["Helemaal oneens", "Oneens", "Neutraal", "Eens", "Helemaal eens"]
-      },
-      {
-        vraag: "Ik heb het gevoel dat mijn lichaam sterk en weerbaar is",
-        opties: ["Helemaal oneens", "Oneens", "Neutraal", "Eens", "Helemaal eens"]
-      }
-    ]
-  },
-  sociaal: {
-    emoji: "👥",
-    title: "Sociaal",
-    questions: [
-      {
-        vraag: "Ik heb sterke en ondersteunende relaties in mijn leven",
-        opties: ["Helemaal oneens", "Oneens", "Neutraal", "Eens", "Helemaal eens"]
-      },
-      {
-        vraag: "Ik voel mij verbonden met een (lokale) community",
-        opties: ["Helemaal oneens", "Oneens", "Neutraal", "Eens", "Helemaal eens"]
-      },
-      {
-        vraag: "Ik ben goed in staat om met anderen te communiceren",
-        opties: ["Helemaal oneens", "Oneens", "Neutraal", "Eens", "Helemaal eens"]
-      },
-      {
-        vraag: "Ik heb mensen in mijn leven waar ik op kan terugvallen als het minder gaat",
-        opties: ["Helemaal oneens", "Oneens", "Neutraal", "Eens", "Helemaal eens"]
-      },
-      {
-        vraag: "Ik ben tevreden met de mate waarin ik verbinding leg met nieuwe mensen",
-        opties: ["Helemaal oneens", "Oneens", "Neutraal", "Eens", "Helemaal eens"]
-      },
-      {
-        vraag: "Ik ben tevreden met de mate waarin ik investeer in de relaties met de mensen om wie ik geef",
-        opties: ["Helemaal oneens", "Oneens", "Neutraal", "Eens", "Helemaal eens"]
-      }
-    ]
-  },
-  materieel: {
-    emoji: "💰",
-    title: "Materieel",
-    questions: [
-      {
-        vraag: "Ik heb de spullen die ik nodig heb om de dingen te doen die ik graag wil doen",
-        opties: ["Helemaal oneens", "Oneens", "Neutraal", "Eens", "Helemaal eens"]
-      },
-      {
-        vraag: "Ik heb een gezonde relatie met geld en materiële bezittingen",
-        opties: ["Helemaal oneens", "Oneens", "Neutraal", "Eens", "Helemaal eens"]
-      },
-      {
-        vraag: "Ik voel me financieel voorbereid op de toekomst",
-        opties: ["Helemaal oneens", "Oneens", "Neutraal", "Eens", "Helemaal eens"]
-      },
-      {
-        vraag: "Ik ben op dit moment in staat om een financiële tegenvaller op te vangen",
-        opties: ["Helemaal oneens", "Oneens", "Neutraal", "Eens", "Helemaal eens"]
-      },
-      {
-        vraag: "Mijn financiële situatie baart me geen zorgen",
-        opties: ["Helemaal oneens", "Oneens", "Neutraal", "Eens", "Helemaal eens"]
-      },
-      {
-        vraag: "Mijn fysieke leefomgeving heeft wat het nodig heeft om comfortabel te zijn",
-        opties: ["Helemaal oneens", "Oneens", "Neutraal", "Eens", "Helemaal eens"]
-      }
-    ]
-  },
-  creatief: {
-    emoji: "🎨",
-    title: "Creatief",
-    questions: [
-      {
-        vraag: "Ik heb het gevoel dat ik goed weet hoe ik mijn creativiteit kan uiten",
-        opties: ["Helemaal oneens", "Oneens", "Neutraal", "Eens", "Helemaal eens"]
-      },
-      {
-        vraag: "Ik uit mijn creativiteit regelmatig",
-        opties: ["Helemaal oneens", "Oneens", "Neutraal", "Eens", "Helemaal eens"]
-      },
-      {
-        vraag: "Ik heb het gevoel dat mijn creativiteit goed tot zijn recht komt in mijn dagelijke activiteiten",
-        opties: ["Helemaal oneens", "Oneens", "Neutraal", "Eens", "Helemaal eens"]
-      },
-      {
-        vraag: "Ik doe regelmatig creatieve inspiratie op",
-        opties: ["Helemaal oneens", "Oneens", "Neutraal", "Eens", "Helemaal eens"]
-      },
-      {
-        vraag: "Ik ben goed in staat om creatieve oplossingen te bedenken voor problemen",
-        opties: ["Helemaal oneens", "Oneens", "Neutraal", "Eens", "Helemaal eens"]
-      },
-      {
-        vraag: "Ik vind het leuk om te experimenteren met nieuwe ideeën en concepten",
-        opties: ["Helemaal oneens", "Oneens", "Neutraal", "Eens", "Helemaal eens"]
+        vraag: "Hoevaak verlies je het besef van tijd wanneer je digitaal actief bent?",
+        opties: ["Niet van toepassing", "Zelden", "Af en toe", "Regelmatig", "Vaak", "Altijd"]
       }
     ]
   }
 };
 
 export default function Home() {
-  const [currentStep, setCurrentStep] = useState(0);
+  const [currentStep, setCurrentStep] = useState(-1);
   const [answers, setAnswers] = useState({});
   const [email, setEmail] = useState('');
   const [questionIndex, setQuestionIndex] = useState(0);
   const [name, setName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [city, setCity] = useState('');
-  const [birthDate, setBirthDate] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
-  const router = useRouter();
+  
 
   const sections = Object.keys(questions);
-  const currentArea = sections[currentStep];
-  const currentAreaQuestions = questions[currentArea]?.questions || [];
+  const totalQuestions = 19; // Changed from 20 to 19
 
   // Load saved state when component mounts
   useEffect(() => {
@@ -296,7 +159,7 @@ export default function Home() {
   };
 
   const handlePreviousSection = () => {
-    if (currentStep > 0) {
+    if (currentStep > -1) {
       setCurrentStep(currentStep - 1);
       setQuestionIndex(0);
       window.scrollTo(0, 0);
@@ -306,17 +169,27 @@ export default function Home() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Add privacy policy validation
     if (!privacyAccepted) {
       toast.error('Je moet akkoord gaan met het privacybeleid');
       return;
     }
     
     setIsSubmitting(true);
-    const loadingToast = toast.loading('Bezig met verzenden...');
+    const loadingToast = toast.loading('Resultaten laden...');
     
     try {
-      const scores = calculateAreaScores();
+      // Calculate total score
+      const totalScore = Object.values(answers).reduce((sum, answer) => {
+        const points = {
+          'Niet van toepassing': 0,
+          'Zelden': 1,
+          'Af en toe': 2,
+          'Regelmatig': 3,
+          'Vaak': 4,
+          'Altijd': 5
+        }[answer] || 0;
+        return sum + points;
+      }, 0);
 
       // Save to Notion
       const notionResponse = await fetch('/api/save-to-notion', {
@@ -328,9 +201,7 @@ export default function Home() {
           email,
           name,
           phoneNumber,
-          city,
-          birthDate,
-          scores,
+          totalScore,
           answers,
         }),
       });
@@ -339,63 +210,11 @@ export default function Home() {
         throw new Error('Failed to save to Notion');
       }
 
-      // Make sure html2pdf is loaded
-      if (!html2pdf) {
-        await import('html2pdf.js').then(module => {
-          html2pdf = module.default;
-        });
-      }
-
-      // Generate PDF content
-      const pdfContent = ReactDOMServer.renderToString(
-        <PdfTemplate 
-          answers={answers} 
-          questions={questions}
-          name={name}
-        />
-      );
-
-      // Create a temporary div to render the HTML
-      const element = document.createElement('div');
-      element.innerHTML = pdfContent;
-      document.body.appendChild(element);
-
-      // Generate PDF using html2pdf in a try-catch block
-      try {
-        const pdf = await html2pdf().from(element).outputPdf('datauristring');
-        
-        // Remove the temporary element
-        document.body.removeChild(element);
-
-        // Send email with PDF attachment and name
-        const response = await fetch('/api/send-email', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            email,
-            name,
-            phoneNumber,
-            city,
-            birthDate,
-            scores,
-            pdfBase64: pdf.split(',')[1]
-          })
-        });
-
-        if (response.ok) {
-          toast.success('De resultaten zijn verzonden naar je e-mail!', {
-            id: loadingToast,
-          });
-          setIsSubmitted(true);
-        } else {
-          throw new Error('Email sending failed');
-        }
-      } catch (pdfError) {
-        console.error('PDF generation error:', pdfError);
-        throw pdfError;
-      }
+      toast.success('Je resultaten zijn verwerkt!', {
+        id: loadingToast,
+      });
+      setIsSubmitted(true);
+      
     } catch (error) {
       console.error('Error:', error);
       toast.error('Er is iets misgegaan bij het verzenden.', {
@@ -403,15 +222,23 @@ export default function Home() {
       });
     } finally {
       setIsSubmitting(false);
-      toast.dismiss(loadingToast);
     }
   };
 
-  // Calculate total questions
-  const totalQuestions = Object.values(questions).reduce(
-    (sum, section) => sum + section.questions.length, 
-    0
-  );
+  // Add function to get score interpretation
+  const getScoreInterpretation = (score) => {
+    if (score <= 20) {
+      return "Een score tussen de 0-20 kan er op duiden dat je weinig tot geen klachten ervaart van je digitale activiteit.";
+    } else if (score <= 40) {
+      return "Een score tussen de 21-40 kan er op duiden dat je weinig tot milde klachten ervaart van je digitale activiteit.";
+    } else if (score <= 60) {
+      return "Een score tussen de 41-60 kan er op duiden dat je milde tot merkbare klachten ervaart van je digitale activiteit.";
+    } else if (score <= 80) {
+      return "Een score tussen 61-80 kan er op duiden dat je merkbare tot serieuze klachten ervaart van je digitale activiteit";
+    } else {
+      return "Een score tussen de 81-100 kan er op duiden dat je serieuze tot extreme klachten ervaart van je digitale activiteit.";
+    }
+  };
 
   // Get current question info
   const getCurrentQuestion = () => {
@@ -440,7 +267,7 @@ export default function Home() {
     
     // Find and scroll to the next question
     setTimeout(() => {
-      const nextQuestionElement = document.querySelector(`[name="question_${currentArea}_${questionIdx + 1}"]`);
+      const nextQuestionElement = document.querySelector(`[name="question_${sections[currentStep]}_${questionIdx + 1}"]`);
       if (nextQuestionElement) {
         nextQuestionElement.scrollIntoView({
           behavior: 'smooth',
@@ -467,15 +294,14 @@ export default function Home() {
         const answerKey = `${area}_${idx}`;
         const answer = answers[answerKey];
         
-        console.log(`Checking ${answerKey}:`, answer); // Debug log
-        
         if (answer) {
           const points = {
-            'Helemaal eens': 10,
-            'Eens': 8,
-            'Neutraal': 6,
-            'Oneens': 4,
-            'Helemaal oneens': 2
+            'Niet van toepassing': 0,
+            'Zelden': 1,
+            'Af en toe': 2,
+            'Regelmatig': 3,
+            'Vaak': 4,
+            'Altijd': 5
           }[answer];
           
           totalScore += points;
@@ -484,10 +310,8 @@ export default function Home() {
       });
       
       scores[area] = questionCount > 0 ? Math.round(totalScore / questionCount) : 0;
-      console.log(`${area} score:`, scores[area]); // Debug log
     });
     
-    console.log('Final scores:', scores); // Debug log
     return scores;
   };
 
@@ -499,7 +323,7 @@ export default function Home() {
 
     values.forEach((value, i) => {
       const angle = i * angleStep - Math.PI / 2;
-      const distance = (value / 10) * scale;
+      const distance = (value / 5) * scale;
       const x = Math.cos(angle) * distance + scale;
       const y = Math.sin(angle) * distance + scale;
       points.push(`${x},${y}`);
@@ -525,57 +349,143 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen p-8 max-w-3xl mx-auto">
+    <main className="min-h-screen p-8 max-w-3xl mx-auto bg-[#2c2928] text-[#f5ede2]">
       <Toaster position="top-center" />
-      <h1 className="text-3xl font-bold mb-8 text-center">
-        De Spark Persoonlijke Ontwikkeling Quickscan
+      <h1 className="text-3xl font-bold mb-8 text-center text-[#f5ede2]">
+        Digital Detox Test
       </h1>
 
-      {isSubmitted ? (
+      {currentStep === -1 ? (
         <div className="text-center space-y-6">
-          <div className="text-6xl mb-8">✨</div>
-          <h2 className="text-2xl font-bold mb-4">
-            Bedankt voor het invullen van de quickscan!
+          <div className="text-6xl mb-8">📱</div>
+          <h2 className="text-2xl font-bold mb-4 text-[#f5ede2]">
+            Welkom bij de Digital Detox Test
           </h2>
-          <p className="text-gray-600 mb-4">
-            We hebben je resultaten verstuurd naar: <strong>{email}</strong>
-          </p>
-          <div className="bg-blue-50 p-6 rounded-lg mb-8">
-            <h3 className="font-semibold mb-3">Wat nu?</h3>
-            <p className="text-gray-600">
-              Check je inbox voor een gedetailleerd overzicht van je scores en inzichten per levensgebied. <b>Het kan een aantal minuten duren voordat het mailtje in je mailbox verschijnt.</b><br></br>
-              Als je de email niet kunt vinden, check dan ook je spam folder.
+          <div className="max-w-2xl mx-auto space-y-4 text-[#f5ede2]">
+            <p>
+            Deze test is bedoeld om je inzicht te geven in hoe je relatie met digitale tools er op dit moment voor staat. 
+
+Hier valt uiteraard je smartphone onder, maar je kunt ook denken aan het gebruik van een laptop, of het streamen van media.
+            </p>
+            <p>
+            Dit alles samen zullen we vanaf nu 'digitale activiteit' noemen.
+
+De quickscan bestaat uit 20 vragen, en duurt ongeveer 1-2 minuten om in te vullen.
+            </p>
+            <p>
+
+Probeer elke vraag zo eerlijk mogelijk te beantwoorden. Er zijn geen goede of foute antwoorden.
+            </p>
+            
+          </div>
+          
+          <button
+            onClick={() => setCurrentStep(0)}
+            className="mt-8 bg-[#FE6C3B] text-[#2c2928] py-3 px-8 rounded-lg hover:bg-[#e55c2f] transition-colors text-lg font-medium"
+          >
+            Start de Test
+          </button>
+        </div>
+      ) : isSubmitted ? (
+        <div className="text-center space-y-6">
+          <div className="text-6xl mb-8">📱</div>
+          <h2 className="text-2xl font-bold mb-4 text-[#f5ede2]">
+            Je resultaten zijn verwerkt!
+          </h2>
+          
+          <div className="bg-[#3a3635] p-6 rounded-lg mb-8">
+            <h3 className="font-semibold mb-3 text-[#f5ede2]">Jouw Score</h3>
+            <div className="text-4xl font-bold mb-4 text-[#FE6C3B]">
+              {Object.values(answers).reduce((sum, answer) => {
+                const points = {
+                  'Niet van toepassing': 0,
+                  'Zelden': 1,
+                  'Af en toe': 2,
+                  'Regelmatig': 3,
+                  'Vaak': 4,
+                  'Altijd': 5
+                }[answer] || 0;
+                return sum + points;
+              }, 0)}
+              <span className="text-sm text-[#f5ede2] ml-2">/ 100</span>
+            </div>
+            <p className="text-[#f5ede2] text-left">
+              {getScoreInterpretation(Object.values(answers).reduce((sum, answer) => {
+                const points = {
+                  'Niet van toepassing': 0,
+                  'Zelden': 1,
+                  'Af en toe': 2,
+                  'Regelmatig': 3,
+                  'Vaak': 4,
+                  'Altijd': 5
+                }[answer] || 0;
+                return sum + points;
+              }, 0))}
             </p>
           </div>
+
+          <div className="mt-12 bg-[#3a3635] p-6 rounded-lg">
+            <h3 className="text-2xl font-bold mb-6 text-center text-[#f5ede2]">Herken je dit?</h3>
+            
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Problems Column */}
+              <div className="space-y-4">
+                <div className="flex items-start justify-start mb-4">
+                  <span className="text-2xl">❌</span>
+                  <h4 className="text-xl font-semibold ml-2 text-[#f5ede2]">Probleem</h4>
+                </div>
+                <ul className="space-y-4 text-sm pl-4">
+                  <li className="flex items-start">
+                    <span className="text-[#f5ede2]">• (consistent) Overweldigd of gestresst voelen</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-[#f5ede2]">• Moeite met het behouden van je focus</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-[#f5ede2]">• Gevoelens van eenzaamheid of moeite met het vormen en onderhouden van betekenisvolle relaties</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-[#f5ede2]">• Moeite met in slaap komen en slechte kwaliteit slaap (en de vermoeidheid die hier bij komt kijken)</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-[#f5ede2]">• Hobbies en interesses waar je maar geen tijd voor lijkt te kunnen maken</span>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Solutions Column */}
+              <div className="space-y-4">
+                <div className="flex items-start justify-start mb-4">
+                  <span className="text-2xl">✅</span>
+                  <h4 className="text-xl font-semibold ml-2 text-[#f5ede2]">Oplossing</h4>
+                </div>
+                <ul className="space-y-4 text-sm pl-4">
+                  <li className="flex items-start">
+                    <span className="text-[#f5ede2]">• Een diep gevoel van rust en controle ervaren</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-[#f5ede2]">• Versterkte concentratie en verhoogde productiviteit voor de dingen die je belangrijk vindt of die gedaan moeten worden</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-[#f5ede2]">• Sterkere verbinding met de mensen die belangrijk voor je zijn, en met meer gemak nieuwe connecties leggen</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-[#f5ede2]">• Met meer gemak in slaap komen en een verhoogde kwaliteit van slaap</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-[#f5ede2]">• Eindelijk weer de hobbies oppakken en de interesses verkennen waar je al zo lang mee aan de slag wou</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
           <div className="space-y-4">
             <button
-              onClick={handleSubmit}
-              className="bg-gray-600 text-white py-2 px-6 rounded hover:bg-gray-700 transition-colors mr-4"
+              onClick={() => window.open('https://wijzijnspark.nl/digital-detox-workshop', '_blank')}
+              className="bg-[#FE6C3B] text-[#2c2928] py-2 px-6 rounded hover:bg-[#e55c2f] transition-colors"
             >
-              Opnieuw versturen
-            </button>
-            <button
-              onClick={() => {
-                // Clear localStorage
-                localStorage.removeItem('formState');
-                
-                // Reset all state
-                setAnswers({});
-                setCurrentStep(0);
-                setQuestionIndex(0);
-                setEmail('');
-                setName('');
-                setPhoneNumber('');
-                setCity('');
-                setBirthDate('');
-                setIsSubmitted(false);
-                
-                // Refresh the page
-                window.location.reload();
-              }}
-              className="bg-[#FE6C3B] text-white py-2 px-6 rounded hover:bg-[#e55c2f] transition-colors"
-            >
-              Start quickscan opnieuw
+              Bekijk de Digital Detox Workshop
             </button>
           </div>
         </div>
@@ -584,61 +494,50 @@ export default function Home() {
           {questionIndex < totalQuestions ? (
             <>
               <div className="text-center mb-8">
-                <div className="text-sm text-gray-500">
-                  Gebied {currentStep + 1} van {sections.length}
+                <div className="text-[#f5ede2]">
+                  Pagina {currentStep + 1} van 2
                 </div>
-                <div className="w-full bg-gray-200 h-2.5 mb-4">
+                <div className="w-full bg-[#3a3635] h-2.5 mb-4">
                   <div 
-                    className="bg-blue-600 h-2.5" 
-                    style={{ width: `${(currentStep + 1) / sections.length * 100}%` }}
+                    className="bg-[#FE6C3B] h-2.5" 
+                    style={{ width: `${(currentStep + 1) / 2 * 100}%` }}
                   />
-                </div>
-                <div className="text-2xl mt-2">
-                  {currentArea && questions[currentArea] ? (
-                    <>
-                      {questions[currentArea].emoji} {questions[currentArea].title}
-                    </>
-                  ) : null}
                 </div>
               </div>
 
               <div className="space-y-12">
-                {currentAreaQuestions.map((q, idx) => (
+                {questions[sections[currentStep]].questions.map((q, idx) => (
                   <div 
-                    key={`${currentArea}_${idx}`}
+                    key={`${sections[currentStep]}_${idx}`}
                     className={`transition-all duration-300 ${
-                      // Check if previous questions are answered
-                      idx > 0 && !answers[`${currentArea}_${idx - 1}`]
+                      idx > 0 && !answers[`${sections[currentStep]}_${idx - 1}`]
                         ? 'opacity-50 blur-sm pointer-events-none'
                         : ''
                     }`}
                   >
-                    <p className="font-medium text-center text-xl mb-8">{q.vraag}</p>
+                    <p className="font-medium text-center text-xl mb-8 text-[#f5ede2]">{q.vraag}</p>
                     
                     <div className="flex justify-between items-center gap-2 px-4">
                       {q.opties.map((optie, optieIdx) => (
-                        <div key={optieIdx} className="flex flex-col items-center">
+                        <div key={optieIdx} className="flex flex-col items-center text-center w-full">
                           <label className="flex flex-col items-center cursor-pointer">
                             <input
                               type="radio"
-                              name={`question_${currentArea}_${idx}`}
+                              name={`question_${sections[currentStep]}_${idx}`}
                               value={optie}
-                              checked={answers[`${currentArea}_${idx}`] === optie}
+                              checked={answers[`${sections[currentStep]}_${idx}`] === optie}
                               onChange={() => handleRadioSelect(idx, optie)}
-                              className="appearance-none w-4 h-4 rounded-full border-2 border-[#9346F5] checked:bg-[#9346F5] checked:border-[#9346F5] transition-all duration-200 cursor-pointer focus:ring-2 focus:ring-[#9346F5] focus:ring-offset-2"
-                              // Disable input if previous question is not answered
-                              disabled={idx > 0 && !answers[`${currentArea}_${idx - 1}`]}
+                              className="appearance-none w-4 h-4 rounded-full border-2 border-[#FE6C3B] checked:bg-[#FE6C3B] checked:border-[#FE6C3B] transition-all duration-200 cursor-pointer focus:ring-2 focus:ring-[#FE6C3B] focus:ring-offset-2"
+                              disabled={idx > 0 && !answers[`${sections[currentStep]}_${idx - 1}`]}
                             />
-                            <span className="text-sm font-medium">{optieIdx + 1}</span>
+                            <span className="text-sm font-medium mb-2 text-[#f5ede2]">{optieIdx}</span>
+                            <span className="text-xs text-[#f5ede2] whitespace-nowrap">{optie}</span>
                           </label>
                         </div>
                       ))}
                     </div>
 
-                    <div className="flex justify-between px-4 text-xs text-gray-500 mt-2">
-                      <span>Helemaal oneens</span>
-                      <span>Helemaal eens</span>
-                    </div>
+                    <div className="h-4"></div>
                   </div>
                 ))}
               </div>
@@ -648,11 +547,11 @@ export default function Home() {
                   type="button"
                   onClick={handlePreviousSection}
                   className={`flex-1 py-2 px-4 rounded ${
-                    currentStep === 0 
-                      ? 'bg-gray-300 cursor-not-allowed' 
-                      : 'bg-gray-300'
+                    currentStep === -1 
+                      ? 'bg-[#3a3635] text-[#f5ede2] cursor-not-allowed' 
+                      : 'bg-[#3a3635] text-[#f5ede2] hover:bg-[#4a4645]'
                   }`}
-                  disabled={currentStep === 0}
+                  disabled={currentStep === -1}
                 >
                   Vorige
                 </button>
@@ -661,11 +560,11 @@ export default function Home() {
                   type="button"
                   onClick={handleNextSection}
                   className={`flex-1 py-2 px-4 rounded ${
-                    Object.keys(answers).filter(key => key.startsWith(currentArea)).length === currentAreaQuestions.length
-                      ? `bg-[#FE6C3B] text-white hover:bg-[#e55c2f] ${currentStep === 0 ? 'plausible-event-name=Next+Button+Click' : ''}`
-                      : 'bg-gray-300 cursor-not-allowed'
+                    Object.keys(answers).filter(key => key.startsWith(sections[currentStep])).length === questions[sections[currentStep]].questions.length
+                      ? `bg-[#FE6C3B] text-[#2c2928] hover:bg-[#e55c2f] ${currentStep === 0 ? 'plausible-event-name=Next+Button+Click' : ''}`
+                      : 'bg-[#3a3635] text-[#f5ede2] cursor-not-allowed'
                   }`}
-                  disabled={Object.keys(answers).filter(key => key.startsWith(currentArea)).length !== currentAreaQuestions.length}
+                  disabled={Object.keys(answers).filter(key => key.startsWith(sections[currentStep])).length !== questions[sections[currentStep]].questions.length}
                 >
                   {currentStep === sections.length - 1 ? 'Naar resultaten' : 'Volgende'}
                 </button>
@@ -674,15 +573,15 @@ export default function Home() {
           ) : (
             <div className="space-y-8">
               <div className="text-center mb-8">
-                <h2 className="text-2xl font-bold mb-2">Bedankt voor het invullen!</h2>
-                <p className="text-gray-600">
-                  Vul hieronder je gegevens in om de resultaten in je inbox te ontvangen.
+                <h2 className="text-2xl font-bold mb-4 text-[#f5ede2]">Bijna klaar!</h2>
+                <p className="text-[#f5ede2]">
+                  Vul hieronder je gegevens en bekijk je resultaten!
                 </p>
               </div>
 
               <div className="max-w-2xl mx-auto space-y-6">
                 <div>
-                  <label className="block mb-2">
+                  <label className="block mb-2 text-[#f5ede2]">
                     Wat is je naam? *
                   </label>
                   <input
@@ -690,12 +589,12 @@ export default function Home() {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     required
-                    className="w-full p-2 border rounded"
+                    className="w-full p-2 border border-[#f5ede2] rounded bg-[#2c2928] text-[#f5ede2] focus:ring-[#FE6C3B] focus:border-[#FE6C3B]"
                     placeholder="Jouw naam"
                   />
                 </div>
                 <div>
-                  <label className="block mb-2">
+                  <label className="block mb-2 text-[#f5ede2]">
                     E-mailadres: *
                   </label>
                   <input
@@ -703,12 +602,12 @@ export default function Home() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="w-full p-2 border rounded"
+                    className="w-full p-2 border border-[#f5ede2] rounded bg-[#2c2928] text-[#f5ede2] focus:ring-[#FE6C3B] focus:border-[#FE6C3B]"
                     placeholder="jouw@email.nl"
                   />
                 </div>
                 <div>
-                  <label className="block mb-2">
+                  <label className="block mb-2 text-[#f5ede2]">
                     Telefoonnummer: *
                   </label>
                   <input
@@ -720,35 +619,8 @@ export default function Home() {
                     }}
                     required
                     pattern="^(?:\+31|0)\s?(?:[1-9])(?:[\s.-]?\d{2}){4}$"
-                    className="w-full p-2 border rounded"
+                    className="w-full p-2 border border-[#f5ede2] rounded bg-[#2c2928] text-[#f5ede2] focus:ring-[#FE6C3B] focus:border-[#FE6C3B]"
                     placeholder="06 12345678"
-                  />
-                  
-                </div>
-                <div>
-                  <label className="block mb-2">
-                    Woonplaats: *
-                  </label>
-                  <input
-                    type="text"
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    required
-                    className="w-full p-2 border rounded"
-                    placeholder="Groningen"
-                  />
-                </div>
-                <div>
-                  <label className="block mb-2">
-                    Geboortedatum: *
-                  </label>
-                  <input
-                    type="date"
-                    value={birthDate}
-                    onChange={(e) => setBirthDate(e.target.value)}
-                    required
-                    className="w-full p-2 border rounded"
-                    max={new Date().toISOString().split('T')[0]}
                   />
                 </div>
                 <div className="mt-6">
@@ -758,9 +630,9 @@ export default function Home() {
                       checked={privacyAccepted}
                       onChange={(e) => setPrivacyAccepted(e.target.checked)}
                       required
-                      className="mt-1 h-4 w-4 rounded border-gray-300 text-[#FE6C3B] focus:ring-[#FE6C3B]"
+                      className="mt-1 h-4 w-4 rounded border-[#f5ede2] bg-[#2c2928] text-[#FE6C3B] focus:ring-[#FE6C3B]"
                     />
-                    <span className="text-sm text-gray-600">
+                    <span className="text-sm text-[#f5ede2]">
                       Ik ga akkoord met het privacybeleid
                     </span>
                   </label>
@@ -770,8 +642,8 @@ export default function Home() {
               <button
                 type="button"
                 onClick={handleSubmit}
-                disabled={isSubmitting || !email || !name || !phoneNumber || !city || !birthDate || !privacyAccepted}
-                className="w-full bg-[#FE6C3B] text-white py-2 px-4 rounded hover:bg-[#e55c2f] disabled:bg-gray-400 disabled:cursor-not-allowed"
+                disabled={isSubmitting || !email || !name || !phoneNumber || !privacyAccepted}
+                className="w-full bg-[#FE6C3B] text-[#2c2928] py-2 px-4 rounded hover:bg-[#e55c2f] disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? (
                   <span className="flex items-center justify-center">
@@ -779,33 +651,25 @@ export default function Home() {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    Versturen...
+                    Laden...
                   </span>
                 ) : (
-                  'Verstuur'
+                  'Bekijk je resultaten'
                 )}
               </button>
-              <div className="mt-12 text-center">
+              {/* <div className="mt-12 text-center">
                   <h3 className="text-xl font-semibold mb-4">Wat gebeurt er hierna?</h3>
-                  <p className="text-gray-600 mb-8">
+                  <p className="text-[#f5ede2] mb-8">
                     Na het versturen ontvang je direct een e-mail met jouw persoonlijke resultaten. 
                     Hierin vind je een overzicht van je scores en inzichten per levensgebied.
                   </p>
-                </div>
+                </div> */}
             </div>
           )}
         </form>
       )}
       
-      {questionIndex === totalQuestions && (
-        <div style={{ display: 'none' }}>
-          <PdfTemplate 
-            answers={answers}
-            questions={questions}
-            name={name}
-          />
-        </div>
-      )}
+      
     </main>
   );
 }
